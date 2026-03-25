@@ -1,0 +1,12 @@
+export function formatNumber(n: number) {
+  return new Intl.NumberFormat("vi-VN").format(n);
+}
+
+export function formatCurrencyVND(amount: number) {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
