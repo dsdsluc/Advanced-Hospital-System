@@ -1,4 +1,7 @@
+"use client";
+
 import { Award, Clock, HeartHandshake, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
 
 const features = [
   {
@@ -27,7 +30,13 @@ export function WhyChooseSection() {
   return (
     <section className="py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="max-w-2xl"
+        >
           <h2 className="text-3xl font-semibold tracking-tight">
             Vì sao chọn QuanCare?
           </h2>
@@ -35,22 +44,27 @@ export function WhyChooseSection() {
             Tập trung vào trải nghiệm bệnh nhân: nhanh, rõ ràng, và đáng tin cậy — từ
             đặt lịch đến điều trị.
           </p>
-        </div>
+        </motion.div>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {features.map((f) => {
+          {features.map((f, i) => {
             const Icon = f.icon;
             return (
-              <div
+              <motion.div
                 key={f.title}
-                className="rounded-2xl border bg-card p-6 shadow-soft transition-shadow hover:shadow-soft"
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.1 }}
+                whileHover={{ y: -4 }}
+                className="rounded-2xl border bg-card p-6 shadow-soft transition-shadow duration-200 hover:shadow-md"
               >
-                <div className="grid h-11 w-11 place-items-center rounded-xl bg-secondary/10 text-secondary">
+                <div className="grid h-11 w-11 place-items-center rounded-xl bg-primary/10 text-primary">
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="mt-4 text-sm font-semibold">{f.title}</div>
                 <div className="mt-2 text-sm text-muted-foreground">{f.description}</div>
-              </div>
+              </motion.div>
             );
           })}
         </div>
@@ -58,4 +72,3 @@ export function WhyChooseSection() {
     </section>
   );
 }
-

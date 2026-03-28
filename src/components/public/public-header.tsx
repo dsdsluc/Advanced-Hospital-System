@@ -1,12 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Menu, Phone } from "lucide-react";
+import { Menu, Phone, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+const navItems = [
+  { label: "Trang chủ", href: "#home" },
+  { label: "Dịch vụ", href: "#services" },
+  { label: "Bác sĩ", href: "#doctors" },
+  { label: "Liên hệ", href: "#contact" },
+];
+
 export function PublicHeader({ className }: { className?: string }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
     <header
       className={cn(
@@ -29,12 +40,7 @@ export function PublicHeader({ className }: { className?: string }) {
 
         {/* NAVIGATION */}
         <nav className="ml-10 hidden items-center gap-8 md:flex">
-          {[
-            { label: "Trang chủ", href: "#home" },
-            { label: "Dịch vụ", href: "#services" },
-            { label: "Bác sĩ", href: "#doctors" },
-            { label: "Liên hệ", href: "#contact" },
-          ].map((item) => (
+          {navItems.map((item) => (
             <a
               key={item.label}
               href={item.href}
@@ -56,22 +62,60 @@ export function PublicHeader({ className }: { className?: string }) {
           {/* CTA */}
           <Button
             asChild
-            className="rounded-full px-5 shadow-sm transition-all hover:shadow-md"
+            className="hidden rounded-full px-5 shadow-sm transition-all hover:shadow-md md:inline-flex"
           >
             <Link href="/auth/login">Đặt lịch khám</Link>
           </Button>
 
-          {/* MOBILE MENU */}
+          {/* MOBILE MENU TOGGLE */}
           <Button
             variant="outline"
             size="icon"
             className="md:hidden rounded-full"
-            aria-label="Mở menu"
+            aria-label={mobileOpen ? "Đóng menu" : "Mở menu"}
+            onClick={() => setMobileOpen((v) => !v)}
           >
-            <Menu className="h-5 w-5" />
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
       </div>
+
+      {/* MOBILE DRAWER */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.22, ease: "easeInOut" }}
+            className="overflow-hidden border-t bg-background/95 backdrop-blur-xl md:hidden"
+          >
+            <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3 sm:px-6">
+              {navItems.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                >
+                  {item.label}
+                </a>
+              ))}
+              <div className="mt-2 border-t pt-3">
+                <div className="mb-2 flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground">
+                  <Phone className="h-4 w-4 text-primary" />
+                  <span>1900 1234</span>
+                </div>
+                <Button asChild className="w-full rounded-full">
+                  <Link href="/auth/login" onClick={() => setMobileOpen(false)}>
+                    Đặt lịch khám
+                  </Link>
+                </Button>
+              </div>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }

@@ -1,5 +1,5 @@
 import { listPatients } from "@/lib/api";
-import { PatientsTable } from "@/components/patients/patients-table";
+import { PatientsTable } from "@/components/admin/patients/patients-table";
 
 export default async function PatientsPage() {
   const data = await listPatients();
@@ -16,4 +16,3 @@ export default async function PatientsPage() {
     </div>
   );
 }
-

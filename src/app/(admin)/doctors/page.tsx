@@ -1,5 +1,5 @@
 import { listDoctors } from "@/lib/api";
-import { DoctorsGrid } from "@/components/doctors/doctors-grid";
+import { DoctorsGrid } from "@/components/admin/doctors/doctors-grid";
 
 export default async function DoctorsPage() {
   const data = await listDoctors();
@@ -16,4 +16,3 @@ export default async function DoctorsPage() {
     </div>
   );
 }
-

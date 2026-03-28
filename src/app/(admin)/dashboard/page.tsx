@@ -1,9 +1,9 @@
 import { getDashboard } from "@/lib/api";
-import { HeroBanner } from "@/components/dashboard/hero-banner";
-import { StatCards } from "@/components/dashboard/stat-cards";
-import { RevenueChart } from "@/components/dashboard/revenue-chart";
-import { RecentPatients } from "@/components/dashboard/recent-patients";
-import { UpcomingAppointments } from "@/components/dashboard/upcoming-appointments";
+import { HeroBanner } from "@/components/admin/dashboard/hero-banner";
+import { StatCards } from "@/components/admin/dashboard/stat-cards";
+import { RevenueChart } from "@/components/admin/dashboard/revenue-chart";
+import { RecentPatients } from "@/components/admin/dashboard/recent-patients";
+import { UpcomingAppointments } from "@/components/admin/dashboard/upcoming-appointments";
 
 export default async function DashboardPage() {
   const data = await getDashboard();
@@ -24,4 +24,3 @@ export default async function DashboardPage() {
     </div>
   );
 }
-

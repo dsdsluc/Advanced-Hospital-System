@@ -1,5 +1,5 @@
 import { listDepartments } from "@/lib/api";
-import { DepartmentsGrid } from "@/components/departments/departments-grid";
+import { DepartmentsGrid } from "@/components/admin/departments/departments-grid";
 
 export default async function DepartmentsPage() {
   const data = await listDepartments();
@@ -16,4 +16,3 @@ export default async function DepartmentsPage() {
     </div>
   );
 }
-

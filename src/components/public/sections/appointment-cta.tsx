@@ -1,6 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CalendarDays } from "lucide-react";
+import { motion } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 
@@ -20,7 +23,13 @@ export function AppointmentCtaSection() {
             <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/75 to-primary/40" />
           </div>
 
-          <div className="relative grid gap-8 p-8 lg:grid-cols-2 lg:p-12">
+          <motion.div
+            initial={{ opacity: 0, y: 32 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="relative grid gap-8 p-8 lg:grid-cols-2 lg:p-12"
+          >
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm text-white ring-1 ring-white/20 backdrop-blur">
                 <CalendarDays className="h-4 w-4" />
@@ -51,10 +60,9 @@ export function AppointmentCtaSection() {
             </div>
 
             <div className="hidden lg:block" />
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
   );
 }
-
