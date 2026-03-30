@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Lock, Mail, ShieldCheck, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -18,7 +19,41 @@ function fadeUp(i: number) {
 }
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error ?? "Đăng nhập thất bại");
+        return;
+      }
+
+      // Store patient session in localStorage
+      localStorage.setItem("patient", JSON.stringify(data.patient));
+      router.push("/patient/dashboard");
+    } catch {
+      setError("Không thể kết nối đến máy chủ");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -44,7 +79,7 @@ export default function LoginPage() {
       </motion.div>
 
       {/* Form */}
-      <motion.form {...fadeUp(2)} className="space-y-4">
+      <motion.form {...fadeUp(2)} className="space-y-4" onSubmit={handleSubmit}>
         {/* Email */}
         <div className="space-y-1.5">
           <Label htmlFor="email" className="text-sm font-medium">
@@ -58,6 +93,9 @@ export default function LoginPage() {
               placeholder="name@example.com"
               className="pl-9"
               autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
         </div>
@@ -83,6 +121,9 @@ export default function LoginPage() {
               placeholder="••••••••"
               className="pl-9 pr-10"
               autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
             <button
               type="button"
@@ -99,22 +140,21 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Remember me */}
-        <label className="flex cursor-pointer items-center gap-2.5">
-          <input
-            type="checkbox"
-            className="h-4 w-4 rounded border-input accent-primary"
-          />
-          <span className="text-sm text-muted-foreground">Ghi nhớ đăng nhập</span>
-        </label>
+        {/* Error */}
+        {error && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
         {/* Submit */}
         <Button
           type="submit"
           size="lg"
+          disabled={loading}
           className="w-full bg-gradient-to-r from-blue-600 to-blue-500 shadow-lg shadow-blue-500/20 transition-all hover:brightness-110 hover:shadow-blue-500/30"
         >
-          Đăng nhập
+          {loading ? "Đang đăng nhập..." : "Đăng nhập"}
         </Button>
       </motion.form>
 
@@ -142,9 +182,34 @@ export default function LoginPage() {
         </Button>
       </motion.div>
 
+      {/* Doctor login */}
+      <motion.div {...fadeUp(5)}>
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-dashed" />
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-background/85 px-3 text-xs text-muted-foreground backdrop-blur-sm">
+              Bác sĩ?
+            </span>
+          </div>
+        </div>
+      </motion.div>
+
+      <motion.div {...fadeUp(6)}>
+        <Button
+          asChild
+          variant="outline"
+          size="lg"
+          className="w-full transition-colors hover:border-blue-500/40 hover:bg-blue-500/5"
+        >
+          <Link href="/auth/doctor-login">Đăng nhập bác sĩ</Link>
+        </Button>
+      </motion.div>
+
       {/* Security badge */}
       <motion.div
-        {...fadeUp(5)}
+        {...fadeUp(7)}
         className="flex items-center gap-2.5 rounded-xl border border-green-500/20 bg-green-500/5 px-4 py-3"
       >
         <ShieldCheck className="h-4 w-4 shrink-0 text-green-500" />

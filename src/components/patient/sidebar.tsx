@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 import {
   PATIENT_BRAND,
   PATIENT_NAV_ITEMS,
-  PATIENT_USER,
 } from "@/components/patient/nav";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,6 +16,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { usePatient } from "@/lib/patient-context";
+
+function getInitials(name: string): string {
+  const words = name.trim().split(/\s+/);
+  const last2 = words.slice(-2);
+  return last2
+    .map((w) => w[0] ?? "")
+    .join("")
+    .toUpperCase();
+}
 
 export function PatientSidebar({
   className,
@@ -26,6 +35,12 @@ export function PatientSidebar({
   collapsed?: boolean;
 }) {
   const pathname = usePathname();
+  const { patient } = usePatient();
+
+  const displayName = patient?.name ?? "Bệnh nhân";
+  const displayCode = patient?.code ?? "---";
+  const displayGender = patient?.gender ?? "---";
+  const initials = patient?.name ? getInitials(patient.name) : "BN";
 
   return (
     <TooltipProvider delayDuration={120}>
@@ -62,29 +77,29 @@ export function PatientSidebar({
             <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-teal-50/60 p-4 dark:from-blue-950/40 dark:to-teal-950/30">
               <div className="flex items-center gap-3">
                 <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-blue-500 to-teal-500 text-white shadow-md shadow-blue-200/50 dark:shadow-blue-900/30">
-                  <span className="text-sm font-bold">{PATIENT_USER.initials}</span>
+                  <span className="text-sm font-bold">{initials}</span>
                 </div>
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
-                    {PATIENT_USER.name}
+                    {displayName}
                   </div>
                   <div className="truncate text-xs text-muted-foreground">
-                    {PATIENT_USER.patientId}
+                    {displayCode}
                   </div>
                 </div>
               </div>
               <div className="mt-3 flex items-center gap-2">
                 <Badge className="border-blue-200 bg-blue-100 text-blue-700 dark:border-blue-800 dark:bg-blue-950/60 dark:text-blue-300 text-xs">
-                  {PATIENT_USER.bloodType}
+                  {displayGender}
                 </Badge>
-                <span className="text-xs text-muted-foreground">Nhóm máu</span>
+                <span className="text-xs text-muted-foreground">Giới tính</span>
               </div>
             </div>
           </div>
         ) : (
           <div className="flex justify-center pt-2">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-blue-500 to-teal-500 text-white shadow-sm">
-              <span className="text-xs font-bold">{PATIENT_USER.initials}</span>
+              <span className="text-xs font-bold">{initials}</span>
             </div>
           </div>
         )}
@@ -154,7 +169,7 @@ export function PatientSidebar({
                 </span>
               </div>
               <div className="mt-1 text-xs text-muted-foreground">
-                {PATIENT_USER.lastVisit}
+                ---
               </div>
               <div className="mt-1.5 flex items-center gap-1.5">
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-teal-500" />

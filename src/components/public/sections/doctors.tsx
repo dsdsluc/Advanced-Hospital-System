@@ -21,7 +21,7 @@ const doctors = [
     name: "BS. Lê Thu Trang",
     specialization: "Nhi khoa",
     avatarUrl:
-      "https://images.unsplash.com/photo-1580281658628-4b5d96f64f0f?auto=format&fit=crop&w=256&q=80",
+      "https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=256&q=80",
     rating: 4.8,
     yearsExp: 12,
   },

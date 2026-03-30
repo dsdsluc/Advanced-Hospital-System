@@ -1,329 +1,307 @@
 "use client";
 
-import * as React from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, Clock, MapPin, Search, SlidersHorizontal } from "lucide-react";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
+import { Clock, Loader, CheckCircle2, LogIn, Play, Eye, XCircle, Stethoscope } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { useDoctor } from "@/lib/doctor-context";
+import { ConsultationDialog } from "./consultation-dialog";
 
-type AppStatus = "Đã hoàn tất" | "Đang khám" | "Chờ khám" | "Vắng mặt" | "Đã hủy";
-
-interface Appointment {
+export interface Appointment {
   id: string;
-  time: string;
   date: string;
+  appointmentDate: string;
+  time: string;
+  patientId: string;
   patientName: string;
   patientCode: string;
   patientAge: number;
-  patientGender: "Nam" | "Nữ";
-  reason: string;
-  room: string;
-  type: "Khám lần đầu" | "Tái khám" | "Khám định kỳ" | "Cấp cứu";
-  status: AppStatus;
-  notes?: string;
+  patientGender: string;
+  patientPhone: string;
+  department: string;
+  departmentId: string;
+  status: string;
+  notes: string;
+  diagnosis: string;
 }
 
-const APPOINTMENTS: Appointment[] = [
-  {
-    id: "1",
-    time: "08:00",
-    date: "28/03/2026",
-    patientName: "Nguyễn Văn An",
-    patientCode: "BN-1024",
-    patientAge: 45,
-    patientGender: "Nam",
-    reason: "Kiểm tra huyết áp định kỳ",
-    room: "302",
-    type: "Khám định kỳ",
-    status: "Đã hoàn tất",
-    notes: "Huyết áp ổn định, tiếp tục dùng thuốc cũ",
-  },
-  {
-    id: "2",
-    time: "08:30",
-    date: "28/03/2026",
-    patientName: "Phạm Thị Bình",
-    patientCode: "BN-0891",
-    patientAge: 32,
-    patientGender: "Nữ",
-    reason: "Theo dõi đường huyết",
-    room: "302",
-    type: "Tái khám",
-    status: "Đã hoàn tất",
-  },
-  {
-    id: "3",
-    time: "09:00",
-    date: "28/03/2026",
-    patientName: "Lê Văn Cường",
-    patientCode: "BN-1156",
-    patientAge: 58,
-    patientGender: "Nam",
-    reason: "Đánh giá chức năng tim",
-    room: "302",
-    type: "Tái khám",
-    status: "Đang khám",
-  },
-  {
-    id: "4",
-    time: "09:30",
-    date: "28/03/2026",
-    patientName: "Hoàng Thị Dung",
-    patientCode: "BN-1302",
-    patientAge: 27,
-    patientGender: "Nữ",
-    reason: "Đau khớp tay, sưng vào buổi sáng",
-    room: "302",
-    type: "Khám lần đầu",
-    status: "Chờ khám",
-  },
-  {
-    id: "5",
-    time: "10:00",
-    date: "28/03/2026",
-    patientName: "Đỗ Minh Khoa",
-    patientCode: "BN-0774",
-    patientAge: 41,
-    patientGender: "Nam",
-    reason: "Xem kết quả xét nghiệm chức năng hô hấp",
-    room: "302",
-    type: "Tái khám",
-    status: "Chờ khám",
-  },
-  {
-    id: "6",
-    time: "13:30",
-    date: "28/03/2026",
-    patientName: "Vũ Thị Lan",
-    patientCode: "BN-0633",
-    patientAge: 55,
-    patientGender: "Nữ",
-    reason: "Tư vấn phác đồ điều trị dài hạn",
-    room: "302",
-    type: "Tái khám",
-    status: "Chờ khám",
-  },
-  {
-    id: "7",
-    time: "14:00",
-    date: "28/03/2026",
-    patientName: "Ngô Văn Hùng",
-    patientCode: "BN-1088",
-    patientAge: 38,
-    patientGender: "Nam",
-    reason: "Đau thượng vị tái phát",
-    room: "302",
-    type: "Tái khám",
-    status: "Chờ khám",
-  },
-  {
-    id: "8",
-    time: "14:30",
-    date: "28/03/2026",
-    patientName: "Trịnh Thị Mai",
-    patientCode: "BN-0942",
-    patientAge: 50,
-    patientGender: "Nữ",
-    reason: "Kiểm tra đường huyết 3 tháng",
-    room: "302",
-    type: "Khám định kỳ",
-    status: "Chờ khám",
-  },
-];
+const STATUS_TABS = ["Tất cả", "Chờ xác nhận", "Đã xác nhận", "Đã check-in", "Đang khám", "Hoàn tất", "Hủy"] as const;
 
-const WEEK_DAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
-const WEEK_DATES = [23, 24, 25, 26, 27, 28, 29];
-const COUNTS = [6, 8, 5, 7, 6, 8, 0];
-
-function statusBadgeStyle(status: AppStatus) {
-  if (status === "Đã hoàn tất") return "bg-secondary/10 text-secondary";
-  if (status === "Đang khám") return "bg-primary/10 text-primary";
-  if (status === "Vắng mặt" || status === "Đã hủy") return "bg-destructive/10 text-destructive";
-  return "bg-muted text-muted-foreground";
-}
-
-function typeBadge(type: Appointment["type"]): "destructive" | "default" | "outline" {
-  if (type === "Cấp cứu") return "destructive";
-  if (type === "Khám lần đầu") return "default";
-  return "outline";
+function statusStyle(status: string) {
+  switch (status) {
+    case "Chờ xác nhận":  return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
+    case "Đã xác nhận":   return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300";
+    case "Đã check-in":   return "bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300";
+    case "Đang khám":     return "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300";
+    case "Hoàn tất":      return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
+    case "Hủy":           return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
+    default:              return "bg-slate-100 text-slate-700";
+  }
 }
 
 export function AppointmentsView() {
-  const [search, setSearch] = React.useState("");
-  const [selectedDay, setSelectedDay] = React.useState(5); // Friday = index 5 (28)
+  const { doctorId } = useDoctor();
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState<string>("Tất cả");
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [consultationAppt, setConsultationAppt] = useState<Appointment | null>(null);
 
-  const filtered = APPOINTMENTS.filter(
+  useEffect(() => {
+    if (!doctorId) return;
+    loadAppointments();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doctorId]);
+
+  async function loadAppointments() {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/doctor/appointments?doctorId=${doctorId}`, { cache: "no-store" });
+      const data: Appointment[] = await res.json();
+      setAppointments(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function updateStatus(id: string, status: string) {
+    setActionLoading(id + status);
+    try {
+      await fetch(`/api/doctor/appointments/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      await loadAppointments();
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  async function startConsultation(appt: Appointment) {
+    setActionLoading(appt.id + "start");
+    try {
+      await fetch(`/api/doctor/appointments/${appt.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "Đang khám" }),
+      });
+      setAppointments((prev) =>
+        prev.map((a) => a.id === appt.id ? { ...a, status: "Đang khám" } : a)
+      );
+      setConsultationAppt({ ...appt, status: "Đang khám" });
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  const baseFiltered = appointments.filter(
     (a) =>
       a.patientName.toLowerCase().includes(search.toLowerCase()) ||
-      a.patientCode.toLowerCase().includes(search.toLowerCase()) ||
-      a.reason.toLowerCase().includes(search.toLowerCase()),
+      a.patientCode.toLowerCase().includes(search.toLowerCase()),
   );
+  const filtered = activeTab === "Tất cả" ? baseFiltered : baseFiltered.filter((a) => a.status === activeTab);
 
-  const done = APPOINTMENTS.filter((a) => a.status === "Đã hoàn tất").length;
-  const total = APPOINTMENTS.length;
+  const counts: Record<string, number> = {};
+  for (const a of appointments) counts[a.status] = (counts[a.status] ?? 0) + 1;
+
+  if (!doctorId) {
+    return (
+      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+        Vui lòng đăng nhập để xem lịch khám
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Week strip */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-sm font-medium">Tháng 3, 2026</span>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+    <div className="space-y-4">
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold">{appointments.length}</div>
+            <div className="text-xs text-muted-foreground">Tổng lịch khám</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-violet-600">
+              {(counts["Đã check-in"] ?? 0) + (counts["Đang khám"] ?? 0)}
             </div>
-            <Badge variant="outline">{done}/{total} hoàn tất hôm nay</Badge>
-          </div>
-          <div className="grid grid-cols-7 gap-2">
-            {WEEK_DAYS.map((day, i) => (
-              <button
-                key={day}
-                onClick={() => setSelectedDay(i)}
-                className={cn(
-                  "flex flex-col items-center gap-1.5 rounded-2xl p-3 transition-colors",
-                  selectedDay === i
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-accent",
-                  WEEK_DATES[i] === 28 && selectedDay !== i && "ring-1 ring-primary/30",
-                )}
-              >
-                <span className="text-xs font-medium">{day}</span>
-                <span className="text-lg font-semibold">{WEEK_DATES[i]}</span>
-                {COUNTS[i] > 0 ? (
-                  <span
-                    className={cn(
-                      "rounded-full px-2 py-0.5 text-xs font-medium",
-                      selectedDay === i
-                        ? "bg-primary-foreground/20 text-primary-foreground"
-                        : "bg-muted text-muted-foreground",
-                    )}
-                  >
-                    {COUNTS[i]}
-                  </span>
-                ) : (
-                  <span className="h-5 text-xs text-muted-foreground">–</span>
-                )}
-              </button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            <div className="text-xs text-muted-foreground">Đang chờ / đang khám</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-2xl font-bold text-green-600">{counts["Hoàn tất"] ?? 0}</div>
+            <div className="text-xs text-muted-foreground">Đã hoàn tất</div>
+          </CardContent>
+        </Card>
+      </div>
 
-      {/* Appointment list */}
-      <Card>
-        <CardHeader className="pb-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <CalendarDays className="h-4 w-4 text-muted-foreground" />
-              Thứ Bảy, 28 tháng 3
-            </CardTitle>
-            <div className="flex gap-2">
-              <div className="relative flex-1 sm:w-64">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Tìm bệnh nhân..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="h-9 pl-9 text-sm"
-                />
-              </div>
-              <Button variant="outline" size="icon" className="h-9 w-9 shrink-0">
-                <SlidersHorizontal className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="grid gap-3">
-            {filtered.map((a) => (
-              <div
-                key={a.id}
-                className={cn(
-                  "group flex items-start gap-4 rounded-2xl border p-4 transition-colors hover:bg-accent/50",
-                  a.status === "Đang khám" && "border-primary/30 bg-primary/5",
-                )}
-              >
-                {/* Time column */}
-                <div className="flex w-14 shrink-0 flex-col items-center gap-1 pt-0.5 text-center">
-                  <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-sm font-semibold tabular-nums">{a.time}</span>
-                </div>
+      {/* Tabs */}
+      <div className="flex flex-wrap gap-2">
+        {STATUS_TABS.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={cn(
+              "rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+              activeTab === tab
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80",
+            )}
+          >
+            {tab}
+            {tab !== "Tất cả" && counts[tab] ? (
+              <span className="ml-1.5 text-xs opacity-70">({counts[tab]})</span>
+            ) : null}
+          </button>
+        ))}
+      </div>
 
-                {/* Content */}
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <div className="text-sm font-medium">{a.patientName}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {a.patientCode} · {a.patientGender}, {a.patientAge} tuổi
+      {/* Search */}
+      <div className="relative">
+        <Input
+          placeholder="Tìm theo tên bệnh nhân hoặc mã..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-10 h-10"
+        />
+        <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+
+      {/* List */}
+      <div className="space-y-3">
+        {loading ? (
+          [...Array(3)].map((_, i) => (
+            <Card key={i}><CardContent className="p-4"><Skeleton className="h-4 w-40 mb-2" /><Skeleton className="h-3 w-60" /></CardContent></Card>
+          ))
+        ) : filtered.length === 0 ? (
+          <Card><CardContent className="p-8 text-center text-muted-foreground">Không có lịch khám</CardContent></Card>
+        ) : (
+          filtered.map((appt) => (
+            <Card key={appt.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-4">
+                  <div className="flex-1 min-w-0">
+                    {/* Date + status */}
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <div className="flex items-center gap-1.5 text-sm font-medium">
+                        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                        {appt.date} · {appt.time}
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={typeBadge(a.type)} className="text-xs">
-                        {a.type}
-                      </Badge>
-                      <span
-                        className={cn(
-                          "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium",
-                          statusBadgeStyle(a.status),
-                        )}
-                      >
-                        {a.status}
+                      <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium", statusStyle(appt.status))}>
+                        {appt.status}
                       </span>
                     </div>
+
+                    {/* Patient info */}
+                    <p className="font-semibold text-sm">{appt.patientName}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {appt.patientCode} · {appt.patientGender}, {appt.patientAge} tuổi · {appt.patientPhone}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{appt.department}</p>
                   </div>
 
-                  <div className="mt-2 text-sm text-muted-foreground">{a.reason}</div>
-
-                  {a.notes && (
-                    <div className="mt-2 rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-                      Ghi chú: {a.notes}
-                    </div>
-                  )}
-
-                  <div className="mt-2 flex items-center gap-3">
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPin className="h-3 w-3" />
-                      Phòng {a.room}
-                    </div>
-                    {a.status === "Chờ khám" && (
-                      <div className="ml-auto flex gap-2">
-                        <Button size="sm" variant="outline" className="h-7 text-xs">
-                          Bắt đầu khám
+                  {/* Actions */}
+                  <div className="flex flex-col gap-2 shrink-0">
+                    {appt.status === "Chờ xác nhận" && (
+                      <div className="flex gap-1.5">
+                        <Button
+                          size="sm" variant="outline"
+                          className="h-8 gap-1 border-green-200 bg-green-50 px-2.5 text-xs text-green-700 hover:bg-green-100"
+                          disabled={actionLoading === appt.id + "Đã xác nhận"}
+                          onClick={() => updateStatus(appt.id, "Đã xác nhận")}
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          Xác nhận
                         </Button>
-                        <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive hover:text-destructive">
+                        <Button
+                          size="sm" variant="outline"
+                          className="h-8 gap-1 border-red-200 bg-red-50 px-2.5 text-xs text-red-700 hover:bg-red-100"
+                          disabled={actionLoading === appt.id + "Hủy"}
+                          onClick={() => updateStatus(appt.id, "Hủy")}
+                        >
+                          <XCircle className="h-3.5 w-3.5" />
                           Hủy
                         </Button>
                       </div>
                     )}
-                    {a.status === "Đang khám" && (
-                      <div className="ml-auto">
-                        <Button size="sm" className="h-7 text-xs">
-                          Xem hồ sơ
-                        </Button>
-                      </div>
+
+                    {appt.status === "Đã xác nhận" && (
+                      <Button
+                        size="sm" variant="outline"
+                        className="h-8 gap-1.5 border-sky-200 bg-sky-50 px-2.5 text-xs text-sky-700 hover:bg-sky-100"
+                        disabled={actionLoading === appt.id + "Đã check-in"}
+                        onClick={() => updateStatus(appt.id, "Đã check-in")}
+                      >
+                        <LogIn className="h-3.5 w-3.5" />
+                        Check-in
+                      </Button>
+                    )}
+
+                    {appt.status === "Đã check-in" && (
+                      <Button
+                        size="sm"
+                        className="h-8 gap-1.5 bg-violet-600 px-2.5 text-xs text-white hover:bg-violet-700"
+                        disabled={actionLoading === appt.id + "start"}
+                        onClick={() => startConsultation(appt)}
+                      >
+                        {actionLoading === appt.id + "start"
+                          ? <Loader className="h-3.5 w-3.5 animate-spin" />
+                          : <Play className="h-3.5 w-3.5" />
+                        }
+                        Bắt đầu khám
+                      </Button>
+                    )}
+
+                    {appt.status === "Đang khám" && (
+                      <Button
+                        size="sm"
+                        className="h-8 gap-1.5 bg-violet-600 px-2.5 text-xs text-white hover:bg-violet-700"
+                        onClick={() => setConsultationAppt(appt)}
+                      >
+                        <Stethoscope className="h-3.5 w-3.5" />
+                        Tiếp tục khám
+                      </Button>
+                    )}
+
+                    {appt.status === "Hoàn tất" && (
+                      <Button
+                        size="sm" variant="outline"
+                        className="h-8 gap-1.5 px-2.5 text-xs"
+                        onClick={() => setConsultationAppt(appt)}
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                        Xem kết quả
+                      </Button>
                     )}
                   </div>
                 </div>
-              </div>
-            ))}
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
 
-            {filtered.length === 0 && (
-              <div className="py-12 text-center text-sm text-muted-foreground">
-                Không tìm thấy lịch khám phù hợp
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Consultation dialog */}
+      {consultationAppt && (
+        <ConsultationDialog
+          appointment={consultationAppt}
+          doctorId={doctorId!}
+          open={!!consultationAppt}
+          onOpenChange={(open: boolean) => { if (!open) { setConsultationAppt(null); loadAppointments(); } }}
+        />
+      )}
     </div>
   );
 }

@@ -1,12 +1,20 @@
 "use client";
 
-import { PanelLeftClose, PanelLeftOpen, Search, Bell, LogOut, User, Settings } from "lucide-react";
+import {
+  PanelLeftClose,
+  PanelLeftOpen,
+  Search,
+  Bell,
+  LogOut,
+  User,
+  Settings,
+} from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/layout/mode-toggle";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,10 +23,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DOCTOR_USER } from "@/components/doctor/nav";
+import { useDoctor } from "@/lib/doctor-context";
 
 function DoctorUserMenu() {
-  const initials = DOCTOR_USER.name
+  const { doctor, logout } = useDoctor();
+
+  if (!doctor) {
+    return null;
+  }
+
+  const initials = doctor.name
     .split(" ")
     .slice(-2)
     .map((s: string) => s[0])
@@ -30,20 +44,21 @@ function DoctorUserMenu() {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="h-10 gap-2 px-2 lg:px-3">
           <Avatar className="h-7 w-7">
-            <AvatarImage src={DOCTOR_USER.avatar} alt={DOCTOR_USER.name} />
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <div className="hidden text-left leading-tight lg:block">
-            <div className="text-sm font-medium">{DOCTOR_USER.name}</div>
-            <div className="text-xs text-muted-foreground">{DOCTOR_USER.role}</div>
+            <div className="text-sm font-medium">{doctor.name}</div>
+            <div className="text-xs text-muted-foreground">
+              {doctor.specialization}
+            </div>
           </div>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuLabel>
-          <div className="font-medium">{DOCTOR_USER.name}</div>
+          <div className="font-medium">{doctor.name}</div>
           <div className="text-xs font-normal text-muted-foreground mt-0.5">
-            {DOCTOR_USER.department} • {DOCTOR_USER.code}
+            {doctor.department ? `${doctor.department.name} • ` : ""}{doctor.specialization}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -56,7 +71,10 @@ function DoctorUserMenu() {
           Cài đặt
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-destructive focus:text-destructive">
+        <DropdownMenuItem
+          className="text-destructive focus:text-destructive cursor-pointer"
+          onClick={logout}
+        >
           <LogOut className="mr-2 h-4 w-4" />
           Đăng xuất
         </DropdownMenuItem>

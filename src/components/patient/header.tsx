@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/layout/mode-toggle";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,9 +24,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PATIENT_USER } from "@/components/patient/nav";
+import { usePatient } from "@/lib/patient-context";
+
+function getInitials(name: string): string {
+  const words = name.trim().split(/\s+/);
+  const last2 = words.slice(-2);
+  return last2
+    .map((w) => w[0] ?? "")
+    .join("")
+    .toUpperCase();
+}
 
 function PatientUserMenu() {
+  const { patient, logout } = usePatient();
+
+  const displayName = patient?.name ?? "Bệnh nhân";
+  const displayCode = patient?.code ?? "---";
+  const initials = patient?.name ? getInitials(patient.name) : "BN";
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -35,23 +50,24 @@ function PatientUserMenu() {
           className="h-10 gap-2 rounded-full border-white/50 bg-white/60 px-2 backdrop-blur-sm dark:border-white/10 dark:bg-slate-900/60 lg:px-3"
         >
           <Avatar className="h-7 w-7">
+            {patient?.avatarUrl ? (
+              <AvatarImage src={patient.avatarUrl} alt={displayName} />
+            ) : null}
             <AvatarFallback className="bg-gradient-to-br from-blue-500 to-teal-500 text-xs font-bold text-white">
-              {PATIENT_USER.initials}
+              {initials}
             </AvatarFallback>
           </Avatar>
           <div className="hidden text-left leading-tight lg:block">
-            <div className="text-sm font-medium">{PATIENT_USER.name}</div>
-            <div className="text-xs text-muted-foreground">
-              {PATIENT_USER.patientId}
-            </div>
+            <div className="text-sm font-medium">{displayName}</div>
+            <div className="text-xs text-muted-foreground">{displayCode}</div>
           </div>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuLabel>
-          <div className="font-medium">{PATIENT_USER.name}</div>
+          <div className="font-medium">{displayName}</div>
           <div className="mt-0.5 text-xs font-normal text-muted-foreground">
-            {PATIENT_USER.patientId} · Nhóm máu {PATIENT_USER.bloodType}
+            {displayCode}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -68,7 +84,10 @@ function PatientUserMenu() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-destructive focus:text-destructive">
+        <DropdownMenuItem
+          className="text-destructive focus:text-destructive"
+          onClick={logout}
+        >
           <LogOut className="mr-2 h-4 w-4" />
           Đăng xuất
         </DropdownMenuItem>

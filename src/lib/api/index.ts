@@ -1,11 +1,3 @@
-import {
-  appointments,
-  dashboardStats,
-  departments,
-  doctors,
-  patients,
-  revenueSeries,
-} from "@/lib/api/mock-data";
 import type {
   Appointment,
   DashboardStats,
@@ -15,8 +7,12 @@ import type {
   RevenuePoint,
 } from "@/lib/api/types";
 
-async function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+// Base URL for internal API routes.
+// In Server Components, Next.js requires an absolute URL for fetch.
+function apiUrl(path: string): string {
+  const base =
+    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api";
+  return `${base}${path}`;
 }
 
 export async function getDashboard(): Promise<{
@@ -25,32 +21,41 @@ export async function getDashboard(): Promise<{
   recentPatients: Patient[];
   upcomingAppointments: Appointment[];
 }> {
-  await sleep(450);
-  return {
-    stats: dashboardStats,
-    revenue: revenueSeries,
-    recentPatients: patients.slice(0, 5),
-    upcomingAppointments: appointments.slice(0, 6),
-  };
+  const res = await fetch(apiUrl("/admin/dashboard"), {
+    cache: "no-store", // always fresh data on dashboard
+  });
+  if (!res.ok) throw new Error("Failed to fetch dashboard data");
+  return res.json();
 }
 
 export async function listPatients(): Promise<Patient[]> {
-  await sleep(500);
-  return patients;
+  const res = await fetch(apiUrl("/admin/patients"), {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to fetch patients");
+  return res.json();
 }
 
 export async function listDoctors(): Promise<Doctor[]> {
-  await sleep(450);
-  return doctors;
+  const res = await fetch(apiUrl("/admin/doctors"), {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to fetch doctors");
+  return res.json();
 }
 
 export async function listAppointments(): Promise<Appointment[]> {
-  await sleep(520);
-  return appointments;
+  const res = await fetch(apiUrl("/admin/appointments"), {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to fetch appointments");
+  return res.json();
 }
 
 export async function listDepartments(): Promise<Department[]> {
-  await sleep(380);
-  return departments;
+  const res = await fetch(apiUrl("/admin/departments"), {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to fetch departments");
+  return res.json();
 }
-
