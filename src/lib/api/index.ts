@@ -8,11 +8,10 @@ import type {
 } from "@/lib/api/types";
 
 // Base URL for internal API routes.
-// In Server Components, Next.js requires an absolute URL for fetch.
+// On server-side (Next.js Server Components): use relative URL `/api` (works localhost and Vercel).
+// Client-side: also use `/api` since browser understands relative URLs.
 function apiUrl(path: string): string {
-  const base =
-    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api";
-  return `${base}${path}`;
+  return `/api${path}`;
 }
 
 export async function getDashboard(): Promise<{
