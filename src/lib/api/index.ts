@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import type {
   Appointment,
   DashboardStats,
@@ -8,10 +9,13 @@ import type {
 } from "@/lib/api/types";
 
 // Base URL for internal API routes.
-// On server-side (Next.js Server Components): use relative URL `/api` (works localhost and Vercel).
-// Client-side: also use `/api` since browser understands relative URLs.
+// Server Components: construct absolute URL from request headers.
+// Works on localhost:3000, Vercel, and any self-hosted deployment.
 function apiUrl(path: string): string {
-  return `/api${path}`;
+  const headersList = headers();
+  const host = headersList.get("host") || "localhost:3000";
+  const protocol = headersList.get("x-forwarded-proto") || "http";
+  return `${protocol}://${host}/api${path}`;
 }
 
 export async function getDashboard(): Promise<{
