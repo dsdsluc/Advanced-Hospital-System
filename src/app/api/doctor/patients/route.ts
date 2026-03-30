@@ -47,6 +47,14 @@ export async function GET(req: NextRequest) {
       orderBy: { name: "asc" },
     });
 
+    // Count appointments per patient for this doctor
+    const apptCounts = await prisma.appointment.groupBy({
+      by: ["patientId"],
+      where: { doctorId, patientId: { in: patientIds } },
+      _count: { id: true },
+    });
+    const countMap = Object.fromEntries(apptCounts.map((r) => [r.patientId, r._count.id]));
+
     const data = patients.map((p) => ({
       id: p.id,
       code: p.code,
@@ -57,6 +65,7 @@ export async function GET(req: NextRequest) {
       avatarUrl: p.avatarUrl,
       status: STATUS_TO_VI[p.status] ?? "Theo dõi",
       lastVisit: formatRelativeDate(p.lastVisit),
+      totalAppointments: countMap[p.id] ?? 0,
     }));
 
     console.log(

@@ -18,6 +18,21 @@ function fadeUp(i: number) {
   };
 }
 
+const DEMO_ACCOUNTS = [
+  {
+    label: "Admin",
+    email: "admin@hospital.com",
+    password: "123456",
+    color: "violet",
+  },
+  {
+    label: "Bệnh nhân",
+    email: "tran.thi.ngoc.anh@hospital.com",
+    password: "patient001",
+    color: "sky",
+  },
+];
+
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
@@ -25,6 +40,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  function fillDemo(acc: typeof DEMO_ACCOUNTS[number]) {
+    setEmail(acc.email);
+    setPassword(acc.password);
+    setError("");
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -45,9 +66,13 @@ export default function LoginPage() {
         return;
       }
 
-      // Store patient session in localStorage
-      localStorage.setItem("patient", JSON.stringify(data.patient));
-      router.push("/patient/dashboard");
+      if (data.role === "ADMIN") {
+        localStorage.setItem("admin", JSON.stringify(data.admin));
+        router.push("/admin/dashboard");
+      } else {
+        localStorage.setItem("patient", JSON.stringify(data.patient));
+        router.push("/patient/dashboard");
+      }
     } catch {
       setError("Không thể kết nối đến máy chủ");
     } finally {
@@ -78,8 +103,36 @@ export default function LoginPage() {
         </p>
       </motion.div>
 
+      {/* Demo accounts */}
+      <motion.div {...fadeUp(2)} className="rounded-xl border border-dashed bg-muted/30 p-3 space-y-2">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          Tài khoản demo
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {DEMO_ACCOUNTS.map((acc) => (
+            <button
+              key={acc.label}
+              type="button"
+              onClick={() => fillDemo(acc)}
+              className={`flex flex-col items-start rounded-lg border px-3 py-2 text-left transition-colors hover:bg-background
+                ${acc.color === "violet"
+                  ? "border-violet-200 bg-violet-50/50 hover:border-violet-300"
+                  : "border-sky-200 bg-sky-50/50 hover:border-sky-300"
+                }`}
+            >
+              <span className={`text-[11px] font-semibold ${acc.color === "violet" ? "text-violet-600" : "text-sky-600"}`}>
+                {acc.label}
+              </span>
+              <span className="mt-0.5 truncate text-[11px] text-muted-foreground w-full">{acc.email}</span>
+              <span className="text-[11px] text-muted-foreground">🔑 {acc.password}</span>
+            </button>
+          ))}
+        </div>
+        <p className="text-[10px] text-muted-foreground">Nhấn vào ô để điền tự động</p>
+      </motion.div>
+
       {/* Form */}
-      <motion.form {...fadeUp(2)} className="space-y-4" onSubmit={handleSubmit}>
+      <motion.form {...fadeUp(3)} className="space-y-4" onSubmit={handleSubmit}>
         {/* Email */}
         <div className="space-y-1.5">
           <Label htmlFor="email" className="text-sm font-medium">
@@ -159,7 +212,7 @@ export default function LoginPage() {
       </motion.form>
 
       {/* Divider */}
-      <motion.div {...fadeUp(3)} className="relative">
+      <motion.div {...fadeUp(4)} className="relative">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-dashed" />
         </div>
@@ -171,7 +224,7 @@ export default function LoginPage() {
       </motion.div>
 
       {/* Register CTA */}
-      <motion.div {...fadeUp(4)}>
+      <motion.div {...fadeUp(5)}>
         <Button
           asChild
           variant="outline"
@@ -183,7 +236,7 @@ export default function LoginPage() {
       </motion.div>
 
       {/* Doctor login */}
-      <motion.div {...fadeUp(5)}>
+      <motion.div {...fadeUp(6)}>
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-dashed" />
@@ -196,7 +249,7 @@ export default function LoginPage() {
         </div>
       </motion.div>
 
-      <motion.div {...fadeUp(6)}>
+      <motion.div {...fadeUp(7)}>
         <Button
           asChild
           variant="outline"
@@ -209,7 +262,7 @@ export default function LoginPage() {
 
       {/* Security badge */}
       <motion.div
-        {...fadeUp(7)}
+        {...fadeUp(8)}
         className="flex items-center gap-2.5 rounded-xl border border-green-500/20 bg-green-500/5 px-4 py-3"
       >
         <ShieldCheck className="h-4 w-4 shrink-0 text-green-500" />

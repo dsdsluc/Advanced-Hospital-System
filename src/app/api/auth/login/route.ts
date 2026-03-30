@@ -14,7 +14,10 @@ export async function POST(req: NextRequest) {
     }
 
     const user = await prisma.user.findFirst({
-      where: { email: email.toLowerCase().trim(), role: "PATIENT" },
+      where: {
+        email: email.toLowerCase().trim(),
+        role: { in: ["PATIENT", "ADMIN"] },
+      },
     });
 
     if (!user || user.password !== password) {
@@ -24,6 +27,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // ── Admin login ──────────────────────────────────────────────────────────
+    if (user.role === "ADMIN") {
+      const res = NextResponse.json({
+        success: true,
+        role: "ADMIN",
+        admin: { id: user.id, name: user.name, email: user.email },
+      });
+      res.cookies.set("admin", "1", { path: "/", httpOnly: true, sameSite: "lax" });
+      console.log(`[API] /auth/login — admin login: ${email}`);
+      return res;
+    }
+
+    // ── Patient login ────────────────────────────────────────────────────────
     const patient = await prisma.patient.findUnique({
       where: { userId: user.id },
     });
@@ -37,6 +53,7 @@ export async function POST(req: NextRequest) {
 
     const res = NextResponse.json({
       success: true,
+      role: "PATIENT",
       patient: {
         id: patient.id,
         userId: user.id,
@@ -51,13 +68,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    res.cookies.set("patient", "1", {
-      path: "/",
-      httpOnly: true,
-      sameSite: "lax",
-    });
-
-    console.log(`[API] /auth/login — login successful for ${email}`);
+    res.cookies.set("patient", "1", { path: "/", httpOnly: true, sameSite: "lax" });
+    console.log(`[API] /auth/login — patient login: ${email}`);
     return res;
   } catch (error) {
     console.error("[API] /auth/login error:", error);
