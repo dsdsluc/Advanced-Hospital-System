@@ -21,6 +21,8 @@ export type Doctor = {
   avatarUrl: string;
   availability: DoctorAvailability;
   rating: number;
+  email?: string;
+  hasLogin?: boolean;
 };
 
 export type AppointmentStatus = "Đã xác nhận" | "Chờ xác nhận" | "Hoàn tất" | "Hủy";

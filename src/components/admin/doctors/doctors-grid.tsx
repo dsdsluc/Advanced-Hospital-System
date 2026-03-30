@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Pencil, Plus, Star, Trash2 } from "lucide-react";
+import { KeyRound, Pencil, Plus, Star, Trash2 } from "lucide-react";
 
 import type { Doctor } from "@/lib/api/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -100,6 +100,15 @@ export function DoctorsGrid({ data: initial }: { data: Doctor[] }) {
                 <div className="text-sm text-muted-foreground">
                   Chuyên khoa {d.specialization}. Trạng thái: {d.availability.toLowerCase()}.
                 </div>
+                {d.email && (
+                  <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <KeyRound className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{d.email}</span>
+                  </div>
+                )}
+                {!d.hasLogin && (
+                  <div className="mt-1 text-xs text-amber-600 font-medium">Chưa có tài khoản</div>
+                )}
                 <div className="mt-3 flex items-center gap-1">
                   <Button size="sm" variant="outline" className="h-8 gap-1.5" onClick={() => openEdit(d)}>
                     <Pencil className="h-3.5 w-3.5" />

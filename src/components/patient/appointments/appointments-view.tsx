@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Calendar, CalendarPlus, Clock, Loader, Stethoscope, User } from "lucide-react";
+import { Calendar, CalendarPlus, Clock, Stethoscope, User } from "lucide-react";
 import { BookDialog } from "./book-dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

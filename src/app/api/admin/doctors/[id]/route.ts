@@ -21,13 +21,16 @@ export async function PUT(req: NextRequest, ctx: RouteContext) {
   try {
     const { id } = await ctx.params;
     const body = await req.json();
-    const { name, specialization, availability, rating, avatarUrl } = body as {
+    const { name, specialization, availability, rating, avatarUrl, newPassword } = body as {
       name?: string; specialization?: string; availability?: string;
-      rating?: number; avatarUrl?: string;
+      rating?: number; avatarUrl?: string; newPassword?: string;
     };
 
     if (!name?.trim()) return NextResponse.json({ error: "Tên bác sĩ là bắt buộc" }, { status: 400 });
     if (!specialization?.trim()) return NextResponse.json({ error: "Chuyên khoa là bắt buộc" }, { status: 400 });
+    if (newPassword !== undefined && newPassword.trim().length > 0 && newPassword.trim().length < 6) {
+      return NextResponse.json({ error: "Mật khẩu phải ít nhất 6 ký tự" }, { status: 400 });
+    }
 
     const dbAvail = availability ? (AVAIL_FROM_VI[availability] ?? "AVAILABLE") : "AVAILABLE";
     const dbRating = rating != null ? Math.min(5, Math.max(1, Number(rating))) : 5.0;
@@ -41,7 +44,16 @@ export async function PUT(req: NextRequest, ctx: RouteContext) {
         rating: dbRating,
         avatarUrl: avatarUrl?.trim() ?? "",
       },
+      include: { user: true },
     });
+
+    // Reset password if provided and doctor has a linked user account
+    if (newPassword?.trim() && doctor.userId) {
+      await prisma.user.update({
+        where: { id: doctor.userId },
+        data: { password: newPassword.trim(), name: name.trim() },
+      });
+    }
 
     const result = {
       id: doctor.id,
@@ -50,6 +62,8 @@ export async function PUT(req: NextRequest, ctx: RouteContext) {
       avatarUrl: doctor.avatarUrl,
       availability: AVAIL_TO_VI[doctor.availability] ?? "Sẵn sàng",
       rating: doctor.rating,
+      email: doctor.user?.email ?? "",
+      hasLogin: !!doctor.userId,
     };
 
     console.log(`[API] /admin/doctors/${id} PUT — updated`);

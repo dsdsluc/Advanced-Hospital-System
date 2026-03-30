@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, Phone, ChevronRight, Loader } from "lucide-react";
+import { Search, Phone, ChevronRight } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useDoctor } from "@/lib/doctor-context";
 import {
@@ -81,7 +80,7 @@ export function PatientsTable() {
   useEffect(() => {
     if (!doctorId) return;
     loadPatients();
-  }, [doctorId]);
+  }, [doctorId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function loadPatients() {
     setLoading(true);

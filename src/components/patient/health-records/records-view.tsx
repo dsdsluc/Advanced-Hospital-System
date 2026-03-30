@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { ClipboardList, Stethoscope, Calendar, Search } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";

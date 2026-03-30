@@ -1,77 +1,79 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// Normalise to midnight UTC for a given YYYY-MM-DD string
+const DEFAULT_SHIFTS = ["MORNING", "AFTERNOON"];
+
 function toDateUTC(dateStr: string): Date {
   const [y, m, d] = dateStr.split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, d));
 }
 
 // GET /api/doctor/schedule?doctorId=&year=&month=
-// Returns schedule entries + appointment counts for every day of the month
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
     const doctorId = searchParams.get("doctorId");
-    const year = parseInt(searchParams.get("year") ?? "");
-    const month = parseInt(searchParams.get("month") ?? ""); // 1-based
+    const year  = parseInt(searchParams.get("year")  ?? "");
+    const month = parseInt(searchParams.get("month") ?? "");
 
     if (!doctorId?.trim() || isNaN(year) || isNaN(month)) {
       return NextResponse.json({ error: "doctorId, year, month required" }, { status: 400 });
     }
 
     const monthStart = new Date(Date.UTC(year, month - 1, 1));
-    const monthEnd = new Date(Date.UTC(year, month, 1)); // exclusive
+    const monthEnd   = new Date(Date.UTC(year, month,     1));
 
     const [schedules, appointments] = await Promise.all([
       prisma.doctorSchedule.findMany({
         where: { doctorId, date: { gte: monthStart, lt: monthEnd } },
       }),
       prisma.appointment.findMany({
-        where: {
-          doctorId,
-          appointmentDate: { gte: monthStart, lt: monthEnd },
-          status: { notIn: ["CANCELLED"] },
-        },
+        where: { doctorId, appointmentDate: { gte: monthStart, lt: monthEnd }, status: { notIn: ["CANCELLED"] } },
         select: { appointmentDate: true },
       }),
     ]);
 
-    // Count appointments per day-of-month
     const apptCounts: Record<number, number> = {};
     for (const a of appointments) {
       const day = new Date(a.appointmentDate).getUTCDate();
       apptCounts[day] = (apptCounts[day] ?? 0) + 1;
     }
 
-    const scheduleMap: Record<number, (typeof schedules)[0]> = {};
+    const scheduleMap: Record<number, { id: string; shifts: string[]; room: string; note: string }> = {};
     for (const s of schedules) {
-      scheduleMap[new Date(s.date).getUTCDate()] = s;
+      scheduleMap[new Date(s.date).getUTCDate()] = {
+        id: s.id,
+        shifts: s.shifts,
+        room: s.room,
+        note: s.note,
+      };
     }
 
-    return NextResponse.json({ scheduleMap, apptCounts });
+    return NextResponse.json({ scheduleMap, apptCounts, defaultShifts: DEFAULT_SHIFTS });
   } catch (error) {
     console.error("[API] /doctor/schedule GET error:", error);
     return NextResponse.json({ error: "Failed to fetch schedule" }, { status: 500 });
   }
 }
 
-// PUT /api/doctor/schedule — upsert a day's schedule
+// PUT /api/doctor/schedule — upsert a day
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
-    const { doctorId, date, shift, room, timeFrom, timeTo, note } = body;
+    const { doctorId, date, shifts, room, note } = body as {
+      doctorId: string; date: string; shifts: string[]; room?: string; note?: string;
+    };
 
-    if (!doctorId || !date || !shift) {
-      return NextResponse.json({ error: "doctorId, date, shift required" }, { status: 400 });
+    if (!doctorId || !date || !Array.isArray(shifts) || shifts.length === 0) {
+      return NextResponse.json({ error: "doctorId, date, shifts required" }, { status: 400 });
     }
 
     const dateUTC = toDateUTC(date);
 
     const record = await prisma.doctorSchedule.upsert({
-      where: { doctorId_date: { doctorId, date: dateUTC } },
-      create: { doctorId, date: dateUTC, shift, room: room ?? "", timeFrom: timeFrom ?? "", timeTo: timeTo ?? "", note: note ?? "" },
-      update: { shift, room: room ?? "", timeFrom: timeFrom ?? "", timeTo: timeTo ?? "", note: note ?? "" },
+      where:  { doctorId_date: { doctorId, date: dateUTC } },
+      create: { doctorId, date: dateUTC, shifts, room: room ?? "", note: note ?? "" },
+      update: { shifts, room: room ?? "", note: note ?? "" },
     });
 
     return NextResponse.json(record);
@@ -81,12 +83,12 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// DELETE /api/doctor/schedule?doctorId=&date=
+// DELETE /api/doctor/schedule?doctorId=&date= — reset day to default
 export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
     const doctorId = searchParams.get("doctorId");
-    const date = searchParams.get("date");
+    const date     = searchParams.get("date");
 
     if (!doctorId || !date) {
       return NextResponse.json({ error: "doctorId and date required" }, { status: 400 });
@@ -99,6 +101,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[API] /doctor/schedule DELETE error:", error);
-    return NextResponse.json({ error: "Failed to delete schedule" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to reset schedule" }, { status: 500 });
   }
 }

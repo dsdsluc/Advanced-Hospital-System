@@ -80,66 +80,138 @@ async function main() {
       data: {
         name: "BS. Nguyễn Hoàng Nam",
         specialization: "Tim mạch",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=256&q=80",
+        avatarUrl: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=256&q=80",
         availability: "AVAILABLE",
         rating: 4.9,
         departmentId: depCardiology.id,
+        phone: "0901 112 233",
+        bio: "Bác sĩ chuyên khoa Tim mạch với hơn 15 năm kinh nghiệm điều trị tăng huyết áp, suy tim và bệnh mạch vành. Từng tu nghiệp tại Bệnh viện Đại học Paris.",
+        room: "Phòng 301, Tầng 3, Toà A",
+        joinedYear: 2009,
+        education: [
+          { degree: "Tiến sĩ Y khoa", school: "Đại học Y Hà Nội", year: "2012" },
+          { degree: "Thạc sĩ Tim mạch", school: "Đại học Y Dược TP.HCM", year: "2008" },
+          { degree: "Bác sĩ Đa khoa", school: "Đại học Y Hà Nội", year: "2004" },
+        ],
+        certifications: [
+          "Chứng chỉ Tim mạch can thiệp – Bộ Y tế 2015",
+          "Chứng chỉ Siêu âm tim nâng cao – Hội Tim mạch Việt Nam 2018",
+          "Fellow of the European Society of Cardiology (FESC) 2020",
+        ],
       },
     }),
     prisma.doctor.create({
       data: {
         name: "BS. Lê Thu Trang",
         specialization: "Nhi khoa",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=256&q=80",
+        avatarUrl: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=256&q=80",
         availability: "BUSY",
         rating: 4.8,
         departmentId: depPediatrics.id,
+        phone: "0912 445 678",
+        bio: "Chuyên gia Nhi khoa tập trung vào các bệnh lý hô hấp và dị ứng ở trẻ em. Có kinh nghiệm thực tế 12 năm và từng công tác tại Bệnh viện Nhi Trung ương.",
+        room: "Phòng 205, Tầng 2, Toà B",
+        joinedYear: 2012,
+        education: [
+          { degree: "Thạc sĩ Nhi khoa", school: "Đại học Y Hà Nội", year: "2011" },
+          { degree: "Bác sĩ Đa khoa", school: "Đại học Y Hà Nội", year: "2007" },
+        ],
+        certifications: [
+          "Chứng chỉ Nhi khoa cấp cứu – Bộ Y tế 2014",
+          "Chứng chỉ Dị ứng nhi – Hội Nhi khoa Việt Nam 2017",
+        ],
       },
     }),
     prisma.doctor.create({
       data: {
         name: "BS. Trần Đức Minh",
         specialization: "Chẩn đoán hình ảnh",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=256&q=80",
+        avatarUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=256&q=80",
         availability: "AVAILABLE",
         rating: 4.7,
         departmentId: depRadiology.id,
+        phone: "0988 007 321",
+        bio: "Chuyên gia Chẩn đoán hình ảnh với thế mạnh về MRI hệ thần kinh và CT đa lớp cắt. Đã thực hiện hơn 10.000 ca đọc phim trong sự nghiệp.",
+        room: "Phòng 102, Tầng 1, Toà C",
+        joinedYear: 2013,
+        education: [
+          { degree: "Tiến sĩ Chẩn đoán hình ảnh", school: "Đại học Y Dược TP.HCM", year: "2016" },
+          { degree: "Bác sĩ Đa khoa", school: "Đại học Y Dược TP.HCM", year: "2008" },
+        ],
+        certifications: [
+          "Chứng chỉ MRI nâng cao – Hội Điện quang Việt Nam 2016",
+          "Chứng chỉ Siêu âm can thiệp – Bộ Y tế 2019",
+        ],
       },
     }),
     prisma.doctor.create({
       data: {
         name: "BS. Phạm Quỳnh Anh",
         specialization: "Da liễu",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1550525811-e5869dd03032?auto=format&fit=crop&w=256&q=80",
+        avatarUrl: "https://images.unsplash.com/photo-1550525811-e5869dd03032?auto=format&fit=crop&w=256&q=80",
         availability: "OFF",
         rating: 4.6,
         departmentId: depDerm.id,
+        phone: "0977 654 890",
+        bio: "Bác sĩ Da liễu chuyên về điều trị mụn trứng cá, vảy nến và các bệnh da mãn tính. Có chứng chỉ thực hiện các thủ thuật laser thẩm mỹ y tế.",
+        room: "Phòng 404, Tầng 4, Toà A",
+        joinedYear: 2015,
+        education: [
+          { degree: "Thạc sĩ Da liễu", school: "Đại học Y Hà Nội", year: "2014" },
+          { degree: "Bác sĩ Đa khoa", school: "Đại học Y Hà Nội", year: "2010" },
+        ],
+        certifications: [
+          "Chứng chỉ Laser điều trị da – Hội Da liễu Việt Nam 2017",
+          "Chứng chỉ Dị ứng da – Bộ Y tế 2020",
+        ],
       },
     }),
     prisma.doctor.create({
       data: {
         name: "BS. Võ Thành Đạt",
         specialization: "Ngoại tổng quát",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=256&q=80",
+        avatarUrl: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=256&q=80",
         availability: "BUSY",
         rating: 4.8,
         departmentId: depSurgery.id,
+        phone: "0908 111 999",
+        bio: "Phẫu thuật viên Ngoại tổng quát với kinh nghiệm nội soi tiêu hoá và phẫu thuật ít xâm lấn. Từng hoàn thành chương trình đào tạo ngoại khoa tại Singapore.",
+        room: "Phòng 502, Tầng 5, Toà B",
+        joinedYear: 2011,
+        education: [
+          { degree: "Tiến sĩ Ngoại khoa", school: "Đại học Y Dược TP.HCM", year: "2015" },
+          { degree: "Thạc sĩ Ngoại tổng quát", school: "Đại học Y Dược TP.HCM", year: "2011" },
+          { degree: "Bác sĩ Đa khoa", school: "Đại học Y Dược TP.HCM", year: "2006" },
+        ],
+        certifications: [
+          "Chứng chỉ Phẫu thuật nội soi – Bộ Y tế 2013",
+          "Chứng chỉ Phẫu thuật ít xâm lấn – Singapore General Hospital 2016",
+          "Thành viên Hội Phẫu thuật Nội soi Châu Á – ELSA 2018",
+        ],
       },
     }),
     prisma.doctor.create({
       data: {
         name: "BS. Đặng Mỹ Linh",
         specialization: "Sản - Phụ khoa",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=256&q=80",
+        avatarUrl: "https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=256&q=80",
         availability: "AVAILABLE",
         rating: 4.9,
         departmentId: depObgyn.id,
+        phone: "0933 888 200",
+        bio: "Chuyên gia Sản Phụ khoa với thế mạnh về theo dõi thai kỳ nguy cơ cao và phẫu thuật phụ khoa nội soi. Đã đỡ đẻ hơn 2.000 ca trong 14 năm hành nghề.",
+        room: "Phòng 310, Tầng 3, Toà B",
+        joinedYear: 2010,
+        education: [
+          { degree: "Tiến sĩ Sản Phụ khoa", school: "Đại học Y Hà Nội", year: "2014" },
+          { degree: "Thạc sĩ Sản Phụ khoa", school: "Đại học Y Hà Nội", year: "2009" },
+          { degree: "Bác sĩ Đa khoa", school: "Đại học Y Hà Nội", year: "2005" },
+        ],
+        certifications: [
+          "Chứng chỉ Siêu âm sản khoa – Hội Sản Phụ khoa Việt Nam 2012",
+          "Chứng chỉ Phẫu thuật nội soi phụ khoa – Bộ Y tế 2015",
+          "Chứng chỉ Thai kỳ nguy cơ cao – WHO 2019",
+        ],
       },
     }),
   ]);
